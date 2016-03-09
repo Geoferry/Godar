@@ -1,9 +1,9 @@
 package main
 
 import (
-	"Godar/models"
-	"Godar/utils"
 	"fmt"
+	"github.com/Geoferry/Godar/models"
+	"github.com/Geoferry/Godar/utils"
 	"image"
 	"image/color"
 	"image/png"

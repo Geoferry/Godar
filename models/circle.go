@@ -1,7 +1,7 @@
 package models
 
 import (
-	"Godar/utils"
+	"github.com/Geoferry/Godar/utils"
 	"image"
 	"image/color"
 	"math"

@@ -4,7 +4,7 @@
 package models
 
 import (
-	"Godar/utils"
+	"github.com/Geoferry/Godar/utils"
 	//"fmt"
 	"image"
 	//"image/jpeg"

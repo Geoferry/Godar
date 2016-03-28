@@ -1,10 +1,11 @@
 package utils
 
 import (
-	//"fmt"
+	"fmt"
 	"image"
 	"image/color"
 	"math"
+	"strconv"
 )
 
 /*********	Start 	DrawCircle ********/
@@ -121,7 +122,6 @@ func DrawDataLineByPercentage(data map[string]int, thick int, rgba *image.RGBA, 
 	for _, v := range data {
 		sum += float64(v)
 	}
-
 	/*
 		1st layer -- 100%
 		2nd layer -- 40%
@@ -134,17 +134,20 @@ func DrawDataLineByPercentage(data map[string]int, thick int, rgba *image.RGBA, 
 	x0, x1, fx, y0, y1, fy := 0, 0, 0, 0, 0, 0
 
 	for key, v := range data {
+		fmt.Println(v, float64(v)/sum, getVertexPerByPer(v, sum))
+
 		tmpRadians := radians * float64(cc)
 		x0, y0 = x1, y1
-		per := float64(v) / sum
+		per := getVertexPerByPer(v, sum)
+		// per := float64(v) / sum
 
-		if per <= 0.05 {
-			per = per / 0.05 / 3
-		} else if per > 0.05 && per <= 0.4 {
-			per = float64(1.0/3.0) + float64((per-0.05)/0.35/3)
-		} else if per > 0.4 && per <= 1 {
-			per = float64(2.0/3.0) + float64((per-0.4)/0.6/3)
-		}
+		// if per <= 0.05 {
+		// 	per = per / 0.05 / 3
+		// } else if per > 0.05 && per <= 0.4 {
+		// 	per = float64(1.0/3.0) + float64((per-0.05)/0.35/3)
+		// } else if per > 0.4 && per <= 1 {
+		// 	per = float64(2.0/3.0) + float64((per-0.4)/0.6/3)
+		//}
 
 		x1 = ToInt(math.Sin(tmpRadians)*per*float64(radius)) + centerX
 		y1 = ToInt(math.Cos(tmpRadians)*per*float64(radius)) + centerY
@@ -162,6 +165,10 @@ func DrawDataLineByPercentage(data map[string]int, thick int, rgba *image.RGBA, 
 		DrawString(tx, ty, key, rgba, fontColor)
 		cc++
 	}
+	fmt.Println(subFunc(0))
+	fmt.Println(subFunc(1) / subFunc(3))
+	fmt.Println(subFunc(2) / subFunc(3))
+	fmt.Println(subFunc(3) / subFunc(3))
 }
 
 /*
@@ -183,6 +190,72 @@ func GetRadiusRadians(img *image.RGBA, n int) (radius int, radians float64) {
 }
 
 /**************		Private Function	*******************/
+// func getVertexPerByVal() {
+// 	key, ok := Config.GetSetting("equal_division")
+// 	layers, ok2 := Config.GetSetting("layers")
+// 	if !ok {
+// 		fmt.Println("equal_division not set in config.conf")
+// 		//return 0.0
+// 	}
+// 	if !ok2 {
+// 		fmt.Println("layers not set in config.conf")
+// 		//return 0.0
+// 	}
+
+// 	if key == "0" {
+
+// 	} else {
+
+// 	}
+// }
+
+func getVertexPerByPer(v int, sum float64) float64 {
+	// per := float64(v) / sum
+
+	// if per <= 0.05 {
+	// 	per = per / 0.05 / 3
+	// } else if per > 0.05 && per <= 0.4 {
+	// 	per = float64(1.0/3.0) + float64((per-0.05)/0.35/3)
+	// } else if per > 0.4 && per <= 1 {
+	// 	per = float64(2.0/3.0) + float64((per-0.4)/0.6/3)
+	//}
+	equal, ok := Config.GetSetting("equal_division")
+	l, ok2 := Config.GetSetting("layers")
+	if !ok {
+		fmt.Println("equal_division not set in config.conf")
+		return 0.0
+	}
+	if !ok2 {
+		fmt.Println("layers not set in config.conf")
+		return 0.0
+	}
+
+	layers, _ := strconv.Atoi(l)
+
+	if equal == "0" {
+		per := float64(v) / sum
+		ans := 0.0
+		dd := subFunc(layers)
+		for i := 0; i < layers; i++ {
+			tt := subFunc(i) / dd
+			if per > tt {
+				per -= tt
+				ans += subFunc(i) / dd
+			} else {
+				ans += per / (subFunc(i+1) - subFunc(i))
+				break
+			}
+		}
+		return ans
+	} else {
+		return float64(v) / sum
+	}
+}
+
+func subFunc(layers int) float64 {
+	return math.Sqrt(float64(layers)) + float64(layers)*1.5
+}
+
 func getMinimum(tmp ...int) int {
 	if len(tmp) == 0 {
 		return 0

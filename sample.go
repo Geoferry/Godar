@@ -31,6 +31,7 @@ func main() {
 		data["S4"] = 620
 		data["S5"] = 300
 		data["S6"] = 170
+		data["S7"] = 670
 		p.New(len(data), rgba)
 		p.FillLayer(1, rgba, color.RGBA{80, 180, 240, 255})
 		p.FillLayer(2, rgba, color.RGBA{40, 120, 160, 255})
@@ -66,7 +67,7 @@ func main() {
 		p2.FillLayer(3, rgba2, color.RGBA{20, 60, 80, 255})
 		p2.DrawNgonLine(2, rgba2, color.RGBA{0, 0, 0, 255})
 		utils.DrawDataLineByData(data2, 2, rgba2, color.RGBA{190, 60, 80, 255}, color.RGBA{176, 25, 120, 255})
-		utils.DrawString(100, 200, "按数值画", rgba2, color.RGBA{176, 25, 120, 255})
+		//utils.DrawString(100, 200, "按数值画", rgba2, color.RGBA{176, 25, 120, 255})
 		png.Encode(file2, rgba2)
 		wg.Done()
 	}()

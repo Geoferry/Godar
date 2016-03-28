@@ -1,4 +1,4 @@
-# A golang rough implementation of radar map
+# A golang rough implementation of radar chart
 
 ## ToDo:
 Customize layers and more

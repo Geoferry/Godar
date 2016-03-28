@@ -8,7 +8,7 @@ import (
 )
 
 /*
-	Create a new circular radar map
+	Create a new circular radar chart
 
 	The default layer is 3,
 	so in this case, we need to get N points and N edges

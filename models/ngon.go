@@ -14,9 +14,9 @@ import (
 )
 
 /*
-	Create a new N regular polygon radar map
+	Create a new N regular polygon radar chart
 
-	In order to get a radar map,
+	In order to get a radar chart,
 	the default layer is 3
 	so the number of all the vertex except center vertex is 3 * N
 	the number of all the edges is 4 * N

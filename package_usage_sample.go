@@ -65,7 +65,7 @@ func main() {
 		p.FillLayer(3, r3, color.RGBA{20, 60, 80, 255})
 		p.DrawNgonLine(2, r3, color.RGBA{0, 0, 0, 255})
 		png.Encode(f3, r3)
-		fmt.Println("N regular polygon radar map sample finished")
+		fmt.Println("N regular polygon radar chart sample finished")
 		wg.Done()
 	}()
 
@@ -86,7 +86,7 @@ func main() {
 		cir.FillLayer(3, r4, color.RGBA{120, 70, 230, 255})
 		cir.DrawCurve(3, r4, color.RGBA{0, 0, 0, 255})
 		png.Encode(f4, r4)
-		fmt.Println("Circular radar map sample finished")
+		fmt.Println("Circular radar chart sample finished")
 		wg.Done()
 	}()
 	wg.Wait()

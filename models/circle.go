@@ -1,10 +1,12 @@
 package models
 
 import (
+	"fmt"
 	"github.com/Geoferry/Godar/utils"
 	"image"
 	"image/color"
 	"math"
+	"strconv"
 )
 
 /*
@@ -13,17 +15,6 @@ import (
 	we need to get N points and N edges
 */
 func (cir *Circle) New(n int, img *image.RGBA) {
-
-	// l, ok := utils.Config.GetSetting("layers")
-	// if !ok {
-	// 	return
-	// }
-	// layers, err := strconv.Atoi(l)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-
 	cir.n = n
 	cir.centerX = img.Bounds().Max.X / 2
 	cir.centerY = img.Bounds().Max.Y / 2
@@ -50,9 +41,19 @@ func (cir *Circle) New(n int, img *image.RGBA) {
 }
 
 func (cir *Circle) DrawCurve(thick int, rgba *image.RGBA, c color.RGBA) {
-	utils.DrawCircle(cir.centerX, cir.centerY, cir.radius/3, thick, c, rgba)
-	utils.DrawCircle(cir.centerX, cir.centerY, cir.radius*2/3, thick, c, rgba)
-	utils.DrawCircle(cir.centerX, cir.centerY, cir.radius, thick, c, rgba)
+	l, ok := utils.Config.GetSetting("layers")
+	if !ok {
+		return
+	}
+	layers, err := strconv.Atoi(l)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for i := 1; i <= layers; i++ {
+		utils.DrawCircle(cir.centerX, cir.centerY, cir.radius*i/layers, thick, c, rgba)
+	}
 
 	for p, _ := range cir.layerPoint {
 		utils.DrawLine(cir.centerX, cir.centerY, p.x, p.y, thick, c, rgba)
@@ -60,14 +61,24 @@ func (cir *Circle) DrawCurve(thick int, rgba *image.RGBA, c color.RGBA) {
 }
 
 func (cir *Circle) FillLayer(layer int, rgba *image.RGBA, c color.RGBA) {
-	//tt := (3 - layer + 1) / 3
-	minX, maxX := cir.centerX-cir.radius*3/(3-layer+1), cir.centerX+cir.radius*3/(3-layer+1)
-	minY, maxY := cir.centerY-cir.radius*3/(3-layer+1), cir.centerY+cir.radius*3/(3-layer+1)
-	if layer == 3 {
+	l, ok := utils.Config.GetSetting("layers")
+	if !ok {
+		return
+	}
+	layers, err := strconv.Atoi(l)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	//tt := (layers - layer + 1) / layers
+	minX, maxX := cir.centerX-cir.radius*layers/(layers-layer+1), cir.centerX+cir.radius*layers/(layers-layer+1)
+	minY, maxY := cir.centerY-cir.radius*layers/(layers-layer+1), cir.centerY+cir.radius*layers/(layers-layer+1)
+	if layer == layers {
 		for x := minX; x < maxX; x++ {
 			for y := minY; y < maxY; y++ {
 				dx, dy := x-cir.centerX, y-cir.centerY
-				if dx*dx+dy*dy < cir.radius*cir.radius/9 {
+				if dx*dx+dy*dy < cir.radius*cir.radius/layers/layers {
 					rgba.Set(x, y, c)
 				}
 			}
@@ -77,8 +88,8 @@ func (cir *Circle) FillLayer(layer int, rgba *image.RGBA, c color.RGBA) {
 	for x := minX; x < maxX; x++ {
 		for y := minY; y < maxY; y++ {
 			dx, dy := x-cir.centerX, y-cir.centerY
-			if (dx*dx+dy*dy < cir.radius*cir.radius*(3-layer+1)*(3-layer+1)/9) &&
-				(dx*dx+dy*dy > cir.radius*cir.radius*(3-layer)*(3-layer)/9) {
+			if (dx*dx+dy*dy < cir.radius*cir.radius*(layers-layer+1)*(layers-layer+1)/layers/layers) &&
+				(dx*dx+dy*dy > cir.radius*cir.radius*(layers-layer)*(layers-layer)/layers/layers) {
 				rgba.Set(x, y, c)
 			}
 		}

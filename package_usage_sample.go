@@ -84,6 +84,7 @@ func main() {
 		cir.FillLayer(1, r4, color.RGBA{160, 150, 190, 255})
 		cir.FillLayer(2, r4, color.RGBA{140, 110, 150, 255})
 		cir.FillLayer(3, r4, color.RGBA{120, 70, 230, 255})
+		//cir.FillLayer(4, r4, color.RGBA{60, 35, 115, 255})
 		cir.DrawCurve(3, r4, color.RGBA{0, 0, 0, 255})
 		png.Encode(f4, r4)
 		fmt.Println("Circular radar chart sample finished")

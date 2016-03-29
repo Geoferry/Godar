@@ -1,7 +1,7 @@
 # A golang rough implementation of radar chart
 
 ## ToDo:
-........
+........Wish your suggestions
 
 ***Note: Set Set your personal settings in conf/config.conf***
 

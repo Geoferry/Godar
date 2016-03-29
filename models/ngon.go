@@ -6,36 +6,47 @@ package models
 import (
 	"github.com/Geoferry/Godar/utils"
 	//"fmt"
+	"fmt"
 	"image"
-	//"image/jpeg"
 	"image/color"
 	"math"
-	//"strings"
+	"strconv"
 )
 
 /*
 	Create a new N regular polygon radar chart
 
 	In order to get a radar chart,
-	the default layer is 3
-	so the number of all the vertex except center vertex is 3 * N
-	the number of all the edges is 4 * N
+
+	the number of all the vertex except center vertex is layers * N
+
+	the number of all the edges is (layers + 1) * N
 */
 func (p *Ngon) New(nedge int, img *image.RGBA) {
+	l, ok := utils.Config.GetSetting("layers")
+	if !ok {
+		return
+	}
+	layers, err := strconv.Atoi(l)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	p.nedges = nedge
 	p.centerX = img.Bounds().Max.X / 2
 	p.centerY = img.Bounds().Max.Y / 2
 	/*
-		Get all the 3 * N vertex we need
+		Get all the layers * N vertex we need
 	*/
 	p.vertex = make(map[int]map[int]int)
 	radius, radians := utils.GetRadiusRadians(img, nedge)
 
-	for j := 0; j < 3; j++ {
+	for j := 0; j < layers; j++ {
 		for i := 0; i < nedge; i++ {
 			tmpRadians := radians * float64(i)
-			tmpX := utils.ToInt(math.Sin(tmpRadians)*float64(radius*(3-j)/3)) + p.centerX
-			tmpY := utils.ToInt(math.Cos(tmpRadians)*float64(radius*(3-j)/3)) + p.centerY
+			tmpX := utils.ToInt(math.Sin(tmpRadians)*float64(radius*(layers-j)/layers)) + p.centerX
+			tmpY := utils.ToInt(math.Cos(tmpRadians)*float64(radius*(layers-j)/layers)) + p.centerY
 			p.vertex[j*nedge+i] = make(map[int]int)
 			p.vertex[j*nedge+i][tmpX] = tmpY
 		}
@@ -75,8 +86,8 @@ func (p *Ngon) New(nedge int, img *image.RGBA) {
 			tmpVerY[i] = tmpY
 		}
 	}
-	tmpVerX = tmpVerX[:3*nedge]
-	tmpVerY = tmpVerY[:3*nedge]
+	tmpVerX = tmpVerX[:layers*nedge]
+	tmpVerY = tmpVerY[:layers*nedge]
 	//fmt.Println(len(tmpVerX), cap(tmpVerX))
 	for i := 0; i < len(tmpVerX); i++ {
 		tmpEdge := &edge{}
@@ -104,6 +115,20 @@ func (p *Ngon) FillLayer(layer int, rgba *image.RGBA, c color.RGBA) {
 	if p.nedges < 3 {
 		return
 	}
+
+	l, ok := utils.Config.GetSetting("layers")
+	if !ok {
+		return
+	}
+	layers, err := strconv.Atoi(l)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if layer > layers {
+		return
+	}
+
 	for i := 0; i < p.nedges/2; i++ {
 		e1, e2 := p.edges[layer*p.nedges+i], p.edges[layer*p.nedges+p.nedges-i-1]
 
@@ -112,7 +137,7 @@ func (p *Ngon) FillLayer(layer int, rgba *image.RGBA, c color.RGBA) {
 
 		for y := minY; y <= maxY; y++ {
 			//fmt.Println("y: ", y)
-			ok, x0, x1 := getX(y, layer, e1, e2)
+			ok, x0, x1 := getX(y, e1, e2)
 			if !ok {
 				continue
 			}

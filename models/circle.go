@@ -10,10 +10,20 @@ import (
 /*
 	Create a new circular radar chart
 
-	The default layer is 3,
-	so in this case, we need to get N points and N edges
+	we need to get N points and N edges
 */
 func (cir *Circle) New(n int, img *image.RGBA) {
+
+	// l, ok := utils.Config.GetSetting("layers")
+	// if !ok {
+	// 	return
+	// }
+	// layers, err := strconv.Atoi(l)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+
 	cir.n = n
 	cir.centerX = img.Bounds().Max.X / 2
 	cir.centerY = img.Bounds().Max.Y / 2

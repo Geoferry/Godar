@@ -34,7 +34,7 @@ type Circle struct {
 /**************		Private Function	*******************/
 
 //This Function created for Ngon's FillLayer method
-func getX(y, layer int, e1 *edge, e2 *edge) (ok bool, x0, x1 int) {
+func getX(y int, e1 *edge, e2 *edge) (ok bool, x0, x1 int) {
 	if (e1.x0 == e1.x1) || (e2.x0 == e2.x1) {
 		return true, e1.x0, e2.x0
 	}

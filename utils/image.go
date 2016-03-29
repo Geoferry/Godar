@@ -69,11 +69,6 @@ func DrawLine(x0, y0, x1, y1, thick int, c color.RGBA, rgba *image.RGBA) {
 	In this map, string is the subject's title on each vertex
 */
 func DrawDataLineByData(data map[string]int, thick int, rgba *image.RGBA, lineColor, fontColor color.RGBA) {
-	/*
-		1st layer -- 1000
-		2nd layer -- 500
-		3rd layer -- 100
-	*/
 	centerX, centerY := rgba.Bounds().Max.X/2, rgba.Bounds().Max.Y/2
 	radius, radians := GetRadiusRadians(rgba, len(data))
 
@@ -84,15 +79,7 @@ func DrawDataLineByData(data map[string]int, thick int, rgba *image.RGBA, lineCo
 		tmpRadians := radians * float64(cc)
 		x0, y0 = x1, y1
 		var tmp float64
-		if v <= 100 {
-			tmp = float64(v) / float64(100) / 3
-		} else if v > 100 && v <= 500 {
-			tmp = float64(1.0/3.0) + float64(v-100)/float64(400)/3
-		} else if v > 500 && v <= 1000 {
-			tmp = float64(2.0/3.0) + float64(v-500)/float64(500)/3
-		} else {
-			tmp = 1.0
-		}
+		tmp = getVertexPerByVal(v)
 
 		x1 = ToInt(math.Sin(tmpRadians)*tmp*float64(radius)) + centerX
 		y1 = ToInt(math.Cos(tmpRadians)*tmp*float64(radius)) + centerY
@@ -122,11 +109,7 @@ func DrawDataLineByPercentage(data map[string]int, thick int, rgba *image.RGBA, 
 	for _, v := range data {
 		sum += float64(v)
 	}
-	/*
-		1st layer -- 100%
-		2nd layer -- 40%
-		3rd layer -- 5%
-	*/
+
 	centerX, centerY := rgba.Bounds().Max.X/2, rgba.Bounds().Max.Y/2
 	radius, radians := GetRadiusRadians(rgba, len(data))
 
@@ -134,20 +117,9 @@ func DrawDataLineByPercentage(data map[string]int, thick int, rgba *image.RGBA, 
 	x0, x1, fx, y0, y1, fy := 0, 0, 0, 0, 0, 0
 
 	for key, v := range data {
-		fmt.Println(v, float64(v)/sum, getVertexPerByPer(v, sum))
-
 		tmpRadians := radians * float64(cc)
 		x0, y0 = x1, y1
 		per := getVertexPerByPer(v, sum)
-		// per := float64(v) / sum
-
-		// if per <= 0.05 {
-		// 	per = per / 0.05 / 3
-		// } else if per > 0.05 && per <= 0.4 {
-		// 	per = float64(1.0/3.0) + float64((per-0.05)/0.35/3)
-		// } else if per > 0.4 && per <= 1 {
-		// 	per = float64(2.0/3.0) + float64((per-0.4)/0.6/3)
-		// }
 
 		x1 = ToInt(math.Sin(tmpRadians)*per*float64(radius)) + centerX
 		y1 = ToInt(math.Cos(tmpRadians)*per*float64(radius)) + centerY
@@ -186,28 +158,61 @@ func GetRadiusRadians(img *image.RGBA, n int) (radius int, radians float64) {
 }
 
 /**************		Private Function	*******************/
-// func getVertexPerByVal() {
-// 	key, ok := Config.GetSetting("equal_division")
-// 	layers, ok2 := Config.GetSetting("layers")
-// 	if !ok {
-// 		fmt.Println("equal_division not set in config.conf")
-// 		//return 0.0
-// 	}
-// 	if !ok2 {
-// 		fmt.Println("layers not set in config.conf")
-// 		//return 0.0
-// 	}
+func getVertexPerByVal(v int) float64 {
 
-// 	if key == "0" {
+	equal, ok := Config.GetSetting("equal_division")
+	if !ok {
+		return 0.0
+	}
 
-// 	} else {
+	l, ok := Config.GetSetting("layers")
+	if !ok {
+		return 0.0
+	}
 
-// 	}
-// }
+	layers, err := strconv.Atoi(l)
+	if err != nil {
+		fmt.Println("layers in config.conf is not an int")
+		return 0.0
+	}
+
+	m, ok := Config.GetSetting("max_value")
+	if !ok {
+		return 0.0
+	}
+
+	max_value, err := strconv.Atoi(m)
+	if err != nil {
+		fmt.Println("max_value in config.conf is not an int")
+		return 0.0
+	}
+
+	if v >= max_value {
+		return 1.0
+	}
+
+	if equal == "0" {
+		mm := make(map[int]int)
+		mm[0] = 0
+		for i := 1; i <= layers; i++ {
+			mm[i] = roundToHundred(int(float64(max_value) * (subFunc(i) / subFunc(layers))))
+		}
+
+		ans := 0.0
+		for i := 1; i <= layers; i++ {
+			if v >= mm[i-1] && v < mm[i] {
+				ans = float64(i-1)/float64(layers) + float64(v-mm[i-1])/float64(mm[i]-mm[i-1])/float64(layers)
+				break
+			}
+		}
+		return ans
+	} else {
+		return float64(v) / float64(max_value)
+	}
+}
 
 func getVertexPerByPer(v int, sum float64) float64 {
 	equal, ok := Config.GetSetting("equal_division")
-	fmt.Println("e", equal)
 	if !ok {
 		return 0.0
 	}
@@ -224,34 +229,31 @@ func getVertexPerByPer(v int, sum float64) float64 {
 
 	layers, err := strconv.Atoi(l)
 	if err != nil {
+		fmt.Println("layers in config.conf is not an int")
 		return 0.0
 	}
 
 	min_percent, err := strconv.ParseFloat(m, 64)
 	if err != nil {
+		fmt.Println("min_percent in config.conf is not an int")
 		return 0.0
 	}
 
-	mm := make(map[int]float64)
-	mm[0] = 0.0
-	for i := 1; i <= layers; i++ {
-		if i == 1 {
-			mm[i] = min_percent
-			continue
-		}
-		if i == layers {
-			mm[i] = 1
-			continue
-		}
-		mm[i] = subFunc(i-1) / subFunc(layers)
-	}
-	// for i := 1; i <= layers; i++ {
-	// 	fmt.Print(mm[i], "\t")
-	// }
-	// fmt.Println()
-
 	if equal == "0" {
-		fmt.Println(0)
+		mm := make(map[int]float64)
+		mm[0] = 0.0
+		for i := 1; i <= layers; i++ {
+			if i == 1 {
+				mm[i] = min_percent
+				continue
+			}
+			if i == layers {
+				mm[i] = 1
+				continue
+			}
+			mm[i] = subFunc(i-1) / subFunc(layers)
+		}
+
 		per := float64(v) / sum
 		ans := 0.0
 		for i := 1; i <= layers; i++ {
@@ -262,8 +264,18 @@ func getVertexPerByPer(v int, sum float64) float64 {
 		}
 		return ans
 	} else {
-		fmt.Println(1)
 		return float64(v) / sum
+	}
+}
+
+func roundToHundred(x int) int {
+	if x < 100 {
+		return 100
+	}
+	if x%100 < 50 {
+		return int(x/100) * 100
+	} else {
+		return int(x/100+1) * 100
 	}
 }
 

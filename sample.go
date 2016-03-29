@@ -13,7 +13,7 @@ import (
 
 func main() {
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 	go func() {
 		p := &models.Ngon{}
 		path, _ := utils.NewImagePath()
@@ -71,6 +71,34 @@ func main() {
 		utils.DrawDataLineByData(data2, 2, rgba2, color.RGBA{190, 60, 80, 255}, color.RGBA{176, 25, 120, 255})
 		utils.DrawString(100, 200, "按数值画", rgba2, color.RGBA{176, 25, 120, 255})
 		png.Encode(file2, rgba2)
+		wg.Done()
+	}()
+	go func() {
+		c1 := &models.Circle{}
+		path3, _ := utils.NewImagePath()
+		file3, err3 := os.Create(path3)
+		if err3 != nil {
+			fmt.Println(err3)
+		}
+		defer file3.Close()
+
+		rgba3 := image.NewRGBA(utils.SetSize(1920, 1080))
+		data3 := make(map[string]int)
+		data3["S1"] = 3500
+		data3["S2"] = 800
+		data3["S3"] = 480
+		data3["S4"] = 620
+		data3["S5"] = 300
+		data3["S6"] = 170
+		c1.New(len(data3), rgba3)
+		c1.FillLayer(1, rgba3, color.RGBA{80, 180, 240, 255})
+		c1.FillLayer(2, rgba3, color.RGBA{40, 120, 160, 255})
+		c1.FillLayer(3, rgba3, color.RGBA{20, 60, 80, 255})
+		// p2.FillLayer(4, rgba2, color.RGBA{10, 30, 40, 255})
+		c1.DrawCurve(2, rgba3, color.RGBA{0, 0, 0, 255})
+		utils.DrawDataLineByData(data3, 2, rgba3, color.RGBA{190, 60, 80, 255}, color.RGBA{176, 25, 120, 255})
+		utils.DrawString(100, 200, "按数值画", rgba3, color.RGBA{176, 25, 120, 255})
+		png.Encode(file3, rgba3)
 		wg.Done()
 	}()
 	wg.Wait()

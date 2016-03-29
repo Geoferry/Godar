@@ -138,16 +138,16 @@ func DrawDataLineByPercentage(data map[string]int, thick int, rgba *image.RGBA, 
 
 		tmpRadians := radians * float64(cc)
 		x0, y0 = x1, y1
-		per := getVertexPerByPer(v, sum)
-		// per := float64(v) / sum
+		//per := getVertexPerByPer(v, sum)
+		per := float64(v) / sum
 
-		// if per <= 0.05 {
-		// 	per = per / 0.05 / 3
-		// } else if per > 0.05 && per <= 0.4 {
-		// 	per = float64(1.0/3.0) + float64((per-0.05)/0.35/3)
-		// } else if per > 0.4 && per <= 1 {
-		// 	per = float64(2.0/3.0) + float64((per-0.4)/0.6/3)
-		//}
+		if per <= 0.05 {
+			per = per / 0.05 / 3
+		} else if per > 0.05 && per <= 0.4 {
+			per = float64(1.0/3.0) + float64((per-0.05)/0.35/3)
+		} else if per > 0.4 && per <= 1 {
+			per = float64(2.0/3.0) + float64((per-0.4)/0.6/3)
+		}
 
 		x1 = ToInt(math.Sin(tmpRadians)*per*float64(radius)) + centerX
 		y1 = ToInt(math.Cos(tmpRadians)*per*float64(radius)) + centerY

@@ -138,16 +138,16 @@ func DrawDataLineByPercentage(data map[string]int, thick int, rgba *image.RGBA, 
 
 		tmpRadians := radians * float64(cc)
 		x0, y0 = x1, y1
-		//per := getVertexPerByPer(v, sum)
-		per := float64(v) / sum
+		per := getVertexPerByPer(v, sum)
+		// per := float64(v) / sum
 
-		if per <= 0.05 {
-			per = per / 0.05 / 3
-		} else if per > 0.05 && per <= 0.4 {
-			per = float64(1.0/3.0) + float64((per-0.05)/0.35/3)
-		} else if per > 0.4 && per <= 1 {
-			per = float64(2.0/3.0) + float64((per-0.4)/0.6/3)
-		}
+		// if per <= 0.05 {
+		// 	per = per / 0.05 / 3
+		// } else if per > 0.05 && per <= 0.4 {
+		// 	per = float64(1.0/3.0) + float64((per-0.05)/0.35/3)
+		// } else if per > 0.4 && per <= 1 {
+		// 	per = float64(2.0/3.0) + float64((per-0.4)/0.6/3)
+		// }
 
 		x1 = ToInt(math.Sin(tmpRadians)*per*float64(radius)) + centerX
 		y1 = ToInt(math.Cos(tmpRadians)*per*float64(radius)) + centerY
@@ -165,10 +165,6 @@ func DrawDataLineByPercentage(data map[string]int, thick int, rgba *image.RGBA, 
 		DrawString(tx, ty, key, rgba, fontColor)
 		cc++
 	}
-	fmt.Println(subFunc(0))
-	fmt.Println(subFunc(1) / subFunc(3))
-	fmt.Println(subFunc(2) / subFunc(3))
-	fmt.Println(subFunc(3) / subFunc(3))
 }
 
 /*
@@ -210,44 +206,63 @@ func GetRadiusRadians(img *image.RGBA, n int) (radius int, radians float64) {
 // }
 
 func getVertexPerByPer(v int, sum float64) float64 {
-	// per := float64(v) / sum
-
-	// if per <= 0.05 {
-	// 	per = per / 0.05 / 3
-	// } else if per > 0.05 && per <= 0.4 {
-	// 	per = float64(1.0/3.0) + float64((per-0.05)/0.35/3)
-	// } else if per > 0.4 && per <= 1 {
-	// 	per = float64(2.0/3.0) + float64((per-0.4)/0.6/3)
-	//}
 	equal, ok := Config.GetSetting("equal_division")
-	l, ok2 := Config.GetSetting("layers")
+	fmt.Println("e", equal)
 	if !ok {
-		fmt.Println("equal_division not set in config.conf")
-		return 0.0
-	}
-	if !ok2 {
-		fmt.Println("layers not set in config.conf")
 		return 0.0
 	}
 
-	layers, _ := strconv.Atoi(l)
+	l, ok := Config.GetSetting("layers")
+	if !ok {
+		return 0.0
+	}
+
+	m, ok := Config.GetSetting("min_percent")
+	if !ok {
+		return 0.0
+	}
+
+	layers, err := strconv.Atoi(l)
+	if err != nil {
+		return 0.0
+	}
+
+	min_percent, err := strconv.ParseFloat(m, 64)
+	if err != nil {
+		return 0.0
+	}
+
+	mm := make(map[int]float64)
+	mm[0] = 0.0
+	for i := 1; i <= layers; i++ {
+		if i == 1 {
+			mm[i] = min_percent
+			continue
+		}
+		if i == layers {
+			mm[i] = 1
+			continue
+		}
+		mm[i] = subFunc(i-1) / subFunc(layers)
+	}
+	// for i := 1; i <= layers; i++ {
+	// 	fmt.Print(mm[i], "\t")
+	// }
+	// fmt.Println()
 
 	if equal == "0" {
+		fmt.Println(0)
 		per := float64(v) / sum
 		ans := 0.0
-		dd := subFunc(layers)
-		for i := 0; i < layers; i++ {
-			tt := subFunc(i) / dd
-			if per > tt {
-				per -= tt
-				ans += subFunc(i) / dd
-			} else {
-				ans += per / (subFunc(i+1) - subFunc(i))
+		for i := 1; i <= layers; i++ {
+			if per >= mm[i-1] && per <= mm[i] {
+				ans = float64(i-1)/float64(layers) + (per-mm[i-1])/(mm[i]-mm[i-1])/float64(layers)
 				break
 			}
 		}
 		return ans
 	} else {
+		fmt.Println(1)
 		return float64(v) / sum
 	}
 }

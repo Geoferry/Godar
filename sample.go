@@ -73,6 +73,7 @@ func main() {
 		png.Encode(file2, rgba2)
 		wg.Done()
 	}()
+	/*****************************************/
 	go func() {
 		c1 := &models.Circle{}
 		path3, _ := utils.NewImagePath()
